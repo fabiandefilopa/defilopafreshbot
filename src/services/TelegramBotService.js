@@ -140,7 +140,7 @@ class TelegramBotService {
       await this.showCustomTimeInput(chatId, session);
     } else if (data.startsWith('exchange_disabled_')) {
       await this.bot.sendMessage(chatId, '⚠️ No wallets configured for this exchange');
-    } else if (data === 'scan_now') {
+    } else if (data === 'scan_now' || data === 'run_again') {
       await this.executeScan(chatId, session);
     } else if (data === 'change_filter') {
       session.setState(STATES.FILTER_INPUT);
@@ -1102,6 +1102,7 @@ class TelegramBotService {
     // Action buttons
     const keyboard = {
       inline_keyboard: [
+        [{ text: '🔄 Run Again', callback_data: 'run_again' }],
         [{ text: '⚙️ Change Filter', callback_data: 'change_filter' }],
         [{ text: '🏠 Main Menu', callback_data: 'back_to_features' }]
       ]
