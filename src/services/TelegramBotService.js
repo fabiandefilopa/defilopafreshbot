@@ -319,14 +319,15 @@ class TelegramBotService {
       `Selected Exchanges: *${exchangeNames}*\n\n` +
       `⚡ *Fresh Wallets (Simple)*\n` +
       `   • Fast scan\n` +
-      `   • Wallets with ONLY 1 receive transaction\n` +
-      `   • No withdraws\n` +
-      `   • No hopping analysis\n\n` +
+      `   • Detects wallets that received funds and never moved them\n` +
+      `   • No intermediate wallet tracking\n\n` +
       `🔗 *Fresh Wallets with Hopping*\n` +
-      `   • Complete scan\n` +
-      `   • Follows wallet chains (hops)\n` +
-      `   • Finds final destination wallets\n` +
-      `   • Slower but more thorough`,
+      `   • Complete and thorough scan\n` +
+      `   • A "hop" is when a wallet receives funds and immediately sends them to another wallet, like a chain of middlemen\n` +
+      `   • Example: Exchange → Wallet A → Wallet B → Wallet C\n` +
+      `     That's 2 hops. The bot follows the money trail up to 3 hops to find the final destination wallet\n` +
+      `   • Useful to detect wallets that try to hide their origin by passing funds through intermediaries\n` +
+      `   • Slower but catches wallets that Simple mode would miss`,
       {
         parse_mode: 'Markdown',
         reply_markup: keyboard
