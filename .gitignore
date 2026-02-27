@@ -1,0 +1,165 @@
+# ============================================
+# ENVIRONMENT & CREDENTIALS (NEVER COMMIT!)
+# ============================================
+.env
+.env.local
+.env.production
+.env.*.local
+.env.development
+.env.test
+
+# ============================================
+# DEPENDENCIES
+# ============================================
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ============================================
+# VERCEL
+# ============================================
+.vercel
+.vercel.json.bak
+.now
+
+# ============================================
+# LOGS
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ============================================
+# OPERATING SYSTEM
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================
+# IDE / EDITORS
+# ============================================
+# VSCode
+.vscode/
+.vscode/*
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs (WebStorm, IntelliJ, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea_modules/
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Vim
+*.swp
+*.swo
+*~
+.*.swp
+.*.swo
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================
+# BUILD & DIST
+# ============================================
+dist/
+build/
+out/
+.next/
+*.tsbuildinfo
+.parcel-cache/
+
+# ============================================
+# TESTING
+# ============================================
+coverage/
+.nyc_output/
+*.lcov
+.coverage
+htmlcov/
+.pytest_cache/
+.cache/
+
+# ============================================
+# TEMPORARY FILES
+# ============================================
+temp/
+tmp/
+*.tmp
+*.temp
+.cache/
+
+# ============================================
+# BACKUP FILES
+# ============================================
+*.bak
+*.backup
+*.old
+*~
+
+# ============================================
+# SYSTEM FILES
+# ============================================
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# ============================================
+# OPTIONAL: DATABASE (if using local SQLite)
+# ============================================
+*.sqlite
+*.sqlite3
+*.db
+
+# ============================================
+# OPTIONAL: SENSITIVE DATA
+# ============================================
+# Uncomment if you store keys/credentials in files
+# credentials.json
+# service-account.json
+# private-keys/
+
+# ============================================
+# PROJECT-SPECIFIC
+# ============================================
+# Supabase local development (if using)
+.supabase/
+
+# Claude Code session files (if any)
+.claude/
+
+# Test files (if you create them)
+test-results/
+test-outputs/

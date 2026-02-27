@@ -1,0 +1,89 @@
+{
+  "exchanges": {
+    "binance": {
+      "name": "Binance",
+      "emoji": "",
+      "wallets": [
+        "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9"
+      ]
+    },
+    "kucoin": {
+      "name": "Kucoin",
+      "emoji": "",
+      "wallets": [
+        "BmFdpraQhkiDQE6SnfG5omcA1VwzqfXrwtNYBwWTymy6"
+      ]
+    },
+     "gateio": {
+      "name": "GateIO",
+      "emoji": "",
+      "wallets": ["u6PJ8DtQuPFnfmwHbGFULQ4u4EgjDiyYKjVEsynXq2w"]
+    },
+    "bitfinex": {
+      "name": "Bitfinex",
+      "emoji": "",
+      "wallets": ["FxteHmLwG9nk1eL4pjNve3Eub2goGkkz6g6TbvdmW46a"]
+    },
+     "okx": {
+      "name": "OKX",
+      "emoji": "",
+      "wallets": ["8wM44Ryv9DFCSfkgUnPEPgnsc53arT4cnmXL6LnnC4UW", "is6MTRHEgyFLNTfYcuV4QBWLjrZBfmhVNYR6ccgr8KV", "C68a6RCGLiPskbPYtAcsCjhG8tfTWYcoB4JjCrXFdqyo"]
+    },
+    "bingx": {
+      "name": "BingX",
+      "emoji": "",
+      "wallets": ["GsCY6n5RY7v3qcDAzGYcDShNzthngVs4So4b5nmVuqSN"]
+    },
+    "mexc": {
+      "name": "MEXC",
+      "emoji": "",
+      "wallets": ["ASTyfSima4LLAdDgoFGkgqoKowG1LZFDr9fAQrg7iaJZ"]
+    },
+    "coinbase": {
+      "name": "Coinbase",
+      "emoji": "",
+      "wallets": ["2AQdpHJ2JpcEgPiATUXjQxA8QmafFegfQwSLWSprPicm"]
+    },
+    "htx": {
+      "name": "HTX",
+      "emoji": "",
+      "wallets": ["38QU8LKVK1Ew5uzsqttamNTTFxvnfzgi2ACQvj3ekuom"]
+    },
+    "bybit": {
+      "name": "Bybit",
+      "emoji": "",
+      "wallets": ["iGdFcQoyR2MwbXMHQskhmNsqddZ6rinsipHc4TNSdwu"]
+    },
+    "WhiteBTC": {
+      "name": "WhiteBIT",
+      "emoji": "",
+      "wallets": ["8mowmVCEewZ9W2cEaQyQeQEeSxhGr1hvRviLwozwNtBt"]
+    },
+    "hitbtc": {
+      "name": "HitBTC",
+      "emoji": "",
+      "wallets": ["DQ5JWbJyWdJeyBxZuuyu36sUBud6L6wo3aN1QC1bRmsR"]
+    },
+     "changenow": {
+      "name": "ChangeNOW",
+      "emoji": "",
+      "wallets": ["G2YxRa6wt1qePMwfJzdXZG62ej4qaTC7YURzuh2Lwd3t"]
+    },
+    "other": {
+      "name": "Other",
+      "emoji": "",
+      "wallets": []
+    },
+    "mywallets": {
+      "name": "My Wallets",
+      "emoji": "💼",
+      "wallets": []
+    }
+  },
+  "detectionConfig": {
+    "maxHops": 3,
+    "firstTransactionsToAnalyze": 3,
+    "minSignificantAmount": 0.000001,
+    "maxAgeHours": 24
+  }
+}
