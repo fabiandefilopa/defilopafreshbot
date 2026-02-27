@@ -7,10 +7,11 @@ class SolanaService {
     this.CACHE_TTL = 5 * 60 * 1000;
 
     // Rate limiting for Helius Free: 10 req/s
-    this.lastRequestTime = 0;
+    // Use 5 req/s (200ms interval) to leave headroom and avoid 429s
     this.requestCount = 0;
-    this.MIN_REQUEST_INTERVAL = 100; // ms between requests (10 req/s - Free tier limit)
-    this.parallelBatchSize = 10; // Process 10 requests in parallel
+    this.MIN_REQUEST_INTERVAL = 200;
+    this.parallelBatchSize = 3;
+    this._queue = Promise.resolve();
   }
 
   async delay(ms) {
@@ -18,18 +19,11 @@ class SolanaService {
   }
 
   /**
-   * Rate-limited delay to respect Helius Free tier limits (3 req/s)
+   * Sequential rate limiter - ensures requests are spaced out even when called in parallel
    */
   async rateLimitedDelay() {
-    const now = Date.now();
-    const timeSinceLastRequest = now - this.lastRequestTime;
-
-    if (timeSinceLastRequest < this.MIN_REQUEST_INTERVAL) {
-      const waitTime = this.MIN_REQUEST_INTERVAL - timeSinceLastRequest;
-      await this.delay(waitTime);
-    }
-
-    this.lastRequestTime = Date.now();
+    this._queue = this._queue.then(() => this.delay(this.MIN_REQUEST_INTERVAL));
+    await this._queue;
     this.requestCount++;
   }
 
