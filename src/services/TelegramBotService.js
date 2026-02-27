@@ -48,14 +48,6 @@ class TelegramBotService {
     const session = this.getSession(chatId);
     session.setState(STATES.FEATURE_SELECTION);
 
-    // Set the persistent menu keyboard silently
-    const menuKeyboard = {
-      keyboard: [[{ text: '📋 Menu' }]],
-      resize_keyboard: true,
-      persistent: true,
-      one_time_keyboard: false
-    };
-
     // Send welcome message with inline keyboard
     const keyboard = {
       inline_keyboard: [
@@ -65,15 +57,6 @@ class TelegramBotService {
       ]
     };
 
-    // Send a temporary minimal message to set the menu keyboard, then delete it
-    const tempMsg = await this.bot.sendMessage(chatId, '.', {
-      reply_markup: menuKeyboard
-    });
-
-    // Delete the temporary message immediately
-    await this.bot.deleteMessage(chatId, tempMsg.message_id);
-
-    // Send the main welcome message with inline keyboard
     await this.bot.sendMessage(chatId, MESSAGES.WELCOME, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
