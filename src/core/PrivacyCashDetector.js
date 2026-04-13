@@ -210,6 +210,15 @@ export class PrivacyCashDetector {
 
     const best = candidates[0];
 
+    const coRecipients = best.matchedWithdrawals
+      .filter(w => w.signature !== withdrawalSignature)
+      .map(w => ({
+        wallet: w.recipient,
+        amountSOL: w.amountSOL,
+        signature: w.signature,
+        blockTime: w.blockTime
+      }));
+
     return {
       recipient: recipientWallet,
       withdrawalSOL: parsed.amountSOL,
@@ -219,6 +228,7 @@ export class PrivacyCashDetector {
         signature: best.deposit.signature,
         blockTime: best.deposit.blockTime
       }],
+      coRecipients,
       matchedWithdrawals: best.matchedWithdrawals,
       bridged: false
     };

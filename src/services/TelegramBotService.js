@@ -713,7 +713,7 @@ class TelegramBotService {
 
   renderFunc2Message(data) {
     let text = `🛡️ *Privacy Cash — Sender of Withdrawal*\n\n`;
-    text += `📥 *Recipient:* \`${data.recipient}\`\n`;
+    text += `📥 *Your recipient:* \`${data.recipient}\`\n`;
     text += `💰 *Withdrawal:* ${data.withdrawalSOL.toFixed(4)} SOL\n\n`;
 
     if (data.bridged || data.senders.length === 0) {
@@ -725,6 +725,14 @@ class TelegramBotService {
     data.senders.forEach((s) => {
       text += `\`${s.wallet}\`\n💰 Deposit: ${s.amountSOL.toFixed(4)} SOL at ${this.formatUTCTime(s.blockTime)} UTC\n`;
     });
+
+    if (data.coRecipients && data.coRecipients.length > 0) {
+      text += `\n🔗 *Other recipients from the same deposit:*\n`;
+      data.coRecipients.forEach((r) => {
+        text += `\`${r.wallet}\` — ${r.amountSOL.toFixed(4)} SOL\n`;
+      });
+    }
+
     return text;
   }
 
