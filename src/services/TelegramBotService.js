@@ -52,7 +52,7 @@ class TelegramBotService {
     const keyboard = {
       inline_keyboard: [
         [{ text: '🆕 Fresh Wallet Scanner', callback_data: 'feature_fresh' }],
-        [{ text: '📊 Wallet Tracker (Coming Soon)', callback_data: 'feature_tracker_soon' }],
+        [{ text: '🛡️ Privacy Cash Scanner', callback_data: 'feature_privacy' }],
         [{ text: '🔔 Alerts (Coming Soon)', callback_data: 'feature_alerts_soon' }]
       ]
     };
@@ -90,6 +90,8 @@ class TelegramBotService {
     // Route based on callback data
     if (data === 'feature_fresh') {
       await this.showExchangeSelection(chatId, session);
+    } else if (data === 'feature_privacy') {
+      await this.showPrivacyCashMenu(chatId, session);
     } else if (data.startsWith('feature_') && data.endsWith('_soon')) {
       await this.bot.sendMessage(chatId, '⏰ Coming soon! Stay tuned.');
     } else if (data.startsWith('toggle_exchange_')) {
@@ -150,6 +152,22 @@ class TelegramBotService {
     } else if (data === 'back_to_features') {
       await this.handleStart({ chat: { id: chatId } });
     }
+  }
+
+  async showPrivacyCashMenu(chatId, session) {
+    session.setState(STATES.FEATURE_SELECTION);
+
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '⏰ Coming Soon', callback_data: 'feature_privacy_soon' }],
+        [{ text: '⬅️ Back', callback_data: 'back_to_features' }]
+      ]
+    };
+
+    await this.bot.sendMessage(chatId, MESSAGES.PRIVACY_CASH_MENU, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
   }
 
   async showExchangeSelection(chatId, session) {

@@ -2,11 +2,25 @@
  * Bot UI messages (English)
  */
 export const MESSAGES = {
-  WELCOME: `🔍 *Solana Wallet Detector*
+  WELCOME: `🤖 *DEFILOPA SOL BOT*
 
-Analyze on-chain wallet activity and detect patterns.
+On-chain intelligence for Solana wallets.
 
-*Select a feature:*`,
+*Available tools:*
+
+🆕 *Fresh Wallet Scanner*
+Detects brand-new wallets receiving funds from major exchanges (Binance, OKX, Bybit, etc.). Useful to spot smart-money entries before they move.
+
+🛡️ *Privacy Cash Scanner*
+Detects wallets interacting with Privacy Cash mixers/protocols on Solana. Useful to flag obfuscated funds and trace their on-chain footprint.
+
+*Select a tool:*`,
+
+  PRIVACY_CASH_MENU: `🛡️ *Privacy Cash Scanner*
+
+Detects wallets that have interacted with Privacy Cash protocols on Solana (deposits, withdrawals, mixing patterns).
+
+⚙️ _Detection logic is being configured. Choose an option below:_`,
 
   SELECT_EXCHANGE: `🆕 *Fresh Wallet Scanner*
 
