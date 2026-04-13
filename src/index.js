@@ -2,6 +2,8 @@ import dotenv from 'dotenv';
 import SolanaService from './services/SolanaService.js';
 import TelegramBotService from './services/TelegramBotService.js';
 import ExchangeConfigService from './services/ExchangeConfigService.js';
+import PrivacyCashService from './services/PrivacyCashService.js';
+import { PrivacyCashDetector } from './core/PrivacyCashDetector.js';
 
 // Load environment variables
 dotenv.config();
@@ -56,12 +58,18 @@ try {
 // Initialize Solana service
 const solanaService = new SolanaService(config.solanaRpcUrl);
 
+// Initialize Privacy Cash services
+const privacyCashService = new PrivacyCashService(solanaService);
+const privacyCashDetector = new PrivacyCashDetector(privacyCashService);
+
 // Initialize Telegram bot
 console.log('\n🤖 Initializing Telegram Bot...');
 const telegramBot = new TelegramBotService(
   config.telegramToken,
   solanaService,
-  exchangeConfig
+  exchangeConfig,
+  null,
+  privacyCashDetector
 );
 
 console.log('✅ Bot initialized successfully');

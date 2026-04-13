@@ -11,6 +11,14 @@ export class UserSession {
     this.scanType = null;          // Scan type: 'simple' | 'hopping'
     this.filter = null;            // Filter config: {type: 'range'|'target', min, max, value, tolerance}
     this.timeRange = null;         // Time range in hours: 3 | 6 | 12 | 24 (1 day) | 48 (2 days) | 72 (3 days) | custom (max 72)
+
+    // Privacy Cash Scanner state
+    this.pcFunction = null;        // 'func1' | 'func2' | 'func3'
+    this.pcDate = null;            // Date object (UTC) representing the day selected for func3
+    this.pcTimeRange = null;       // { startSec: number, endSec: number } UTC seconds
+    this.pcResults = null;         // Latest scan result object
+    this.pcPage = 0;               // Current page in paginated results
+
     this.createdAt = new Date();
     this.lastActivity = new Date();
   }
@@ -57,6 +65,11 @@ export class UserSession {
     this.scanType = null;
     this.filter = null;
     this.timeRange = null;
+    this.pcFunction = null;
+    this.pcDate = null;
+    this.pcTimeRange = null;
+    this.pcResults = null;
+    this.pcPage = 0;
     this.lastActivity = new Date();
   }
 

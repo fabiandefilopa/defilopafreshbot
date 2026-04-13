@@ -9,11 +9,12 @@ import { MESSAGES } from '../constants/messages.js';
  * Telegram Bot Service with state machine and hierarchical menus
  */
 class TelegramBotService {
-  constructor(token, solanaService, exchangeConfig, botInstance = null) {
+  constructor(token, solanaService, exchangeConfig, botInstance = null, privacyCashDetector = null) {
     // Use provided bot instance or create new one with polling
     this.bot = botInstance || new TelegramBot(token, { polling: true });
     this.solanaService = solanaService;
     this.exchangeConfig = exchangeConfig;
+    this.privacyCashDetector = privacyCashDetector;
 
     this.sessions = new Map(); // chatId -> UserSession
 
@@ -151,15 +152,44 @@ class TelegramBotService {
       await this.showExchangeSelection(chatId, session);
     } else if (data === 'back_to_features') {
       await this.handleStart({ chat: { id: chatId } });
+    } else if (data === 'back_to_pc_menu') {
+      await this.showPrivacyCashMenu(chatId, session);
+    } else if (data === 'pc_func1') {
+      await this.startPCFunction1(chatId, session);
+    } else if (data === 'pc_func2') {
+      await this.startPCFunction2(chatId, session);
+    } else if (data === 'pc_func3') {
+      await this.startPCFunction3(chatId, session);
+    } else if (data === 'pc_date_today' || data === 'pc_date_yesterday') {
+      const now = new Date();
+      const day = data === 'pc_date_today' ? now : new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      session.pcDate = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate()));
+      await this.showPCTimeInput(chatId, session);
+    } else if (data === 'pc_date_custom') {
+      session.setState(STATES.PC_FUNC3_DATE_CUSTOM);
+      await this.bot.sendMessage(chatId, MESSAGES.PC_FUNC3_DATE_CUSTOM, { parse_mode: 'Markdown' });
+    } else if (data === 'pc_page_next') {
+      session.pcPage = (session.pcPage || 0) + 1;
+      await this.renderPCResultsPage(chatId, session, messageId);
+    } else if (data === 'pc_page_prev') {
+      session.pcPage = Math.max(0, (session.pcPage || 0) - 1);
+      await this.renderPCResultsPage(chatId, session, messageId);
+    } else if (data === 'pc_noop') {
+      // pagination indicator — no action
     }
   }
 
   async showPrivacyCashMenu(chatId, session) {
-    session.setState(STATES.FEATURE_SELECTION);
+    session.setState(STATES.PC_MENU);
+    session.pcFunction = null;
+    session.pcResults = null;
+    session.pcPage = 0;
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '⏰ Coming Soon', callback_data: 'feature_privacy_soon' }],
+        [{ text: '1️⃣ Recipients of a deposit', callback_data: 'pc_func1' }],
+        [{ text: '2️⃣ Sender of a withdrawal', callback_data: 'pc_func2' }],
+        [{ text: '3️⃣ Match all in time range', callback_data: 'pc_func3' }],
         [{ text: '⬅️ Back', callback_data: 'back_to_features' }]
       ]
     };
@@ -167,6 +197,54 @@ class TelegramBotService {
     await this.bot.sendMessage(chatId, MESSAGES.PRIVACY_CASH_MENU, {
       parse_mode: 'Markdown',
       reply_markup: keyboard
+    });
+  }
+
+  async startPCFunction1(chatId, session) {
+    session.pcFunction = 'func1';
+    session.setState(STATES.PC_FUNC1_INPUT);
+    await this.bot.sendMessage(chatId, MESSAGES.PC_FUNC1_INPUT, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '⬅️ Back', callback_data: 'back_to_pc_menu' }]] }
+    });
+  }
+
+  async startPCFunction2(chatId, session) {
+    session.pcFunction = 'func2';
+    session.setState(STATES.PC_FUNC2_INPUT);
+    await this.bot.sendMessage(chatId, MESSAGES.PC_FUNC2_INPUT, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '⬅️ Back', callback_data: 'back_to_pc_menu' }]] }
+    });
+  }
+
+  async startPCFunction3(chatId, session) {
+    session.pcFunction = 'func3';
+    session.setState(STATES.PC_FUNC3_DATE_CUSTOM);
+
+    const keyboard = {
+      inline_keyboard: [
+        [
+          { text: '🕐 Today', callback_data: 'pc_date_today' },
+          { text: '📆 Yesterday', callback_data: 'pc_date_yesterday' }
+        ],
+        [{ text: '✏️ Custom date', callback_data: 'pc_date_custom' }],
+        [{ text: '⬅️ Back', callback_data: 'back_to_pc_menu' }]
+      ]
+    };
+
+    await this.bot.sendMessage(chatId, MESSAGES.PC_FUNC3_DATE, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
+  }
+
+  async showPCTimeInput(chatId, session) {
+    session.setState(STATES.PC_FUNC3_TIME_INPUT);
+    const dateStr = session.pcDate.toISOString().slice(0, 10);
+    await this.bot.sendMessage(chatId, `📅 Date: *${dateStr}* (UTC)\n\n${MESSAGES.PC_FUNC3_TIME}`, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '⬅️ Back', callback_data: 'pc_func3' }]] }
     });
   }
 
@@ -419,9 +497,339 @@ class TelegramBotService {
     } else if (session.state === STATES.CUSTOM_TIME_INPUT) {
       console.log('✅ Processing custom time input...');
       await this.handleCustomTimeInput(chatId, session, msg.text);
+    } else if (session.state === STATES.PC_FUNC1_INPUT) {
+      await this.handlePCSignatureInput(chatId, session, msg.text, 'func1');
+    } else if (session.state === STATES.PC_FUNC2_INPUT) {
+      await this.handlePCSignatureInput(chatId, session, msg.text, 'func2');
+    } else if (session.state === STATES.PC_FUNC3_DATE_CUSTOM) {
+      await this.handlePCDateCustomInput(chatId, session, msg.text);
+    } else if (session.state === STATES.PC_FUNC3_TIME_INPUT) {
+      await this.handlePCTimeRangeInput(chatId, session, msg.text);
     } else {
       console.log(`❌ State mismatch. Ignoring message.`);
     }
+  }
+
+  isValidSignature(text) {
+    const trimmed = text.trim();
+    return /^[1-9A-HJ-NP-Za-km-z]{80,100}$/.test(trimmed);
+  }
+
+  async handlePCSignatureInput(chatId, session, text, fn) {
+    const signature = text.trim();
+    if (!this.isValidSignature(signature)) {
+      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_SIGNATURE, { parse_mode: 'Markdown' });
+      return;
+    }
+
+    if (fn === 'func1') {
+      await this.executePCFunction1(chatId, session, signature);
+    } else {
+      await this.executePCFunction2(chatId, session, signature);
+    }
+  }
+
+  async handlePCDateCustomInput(chatId, session, text) {
+    const match = text.trim().match(/^(\d{1,2})-(\d{1,2})$/);
+    if (!match) {
+      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_DATE, { parse_mode: 'Markdown' });
+      return;
+    }
+    const day = parseInt(match[1], 10);
+    const month = parseInt(match[2], 10);
+    const year = 2026;
+
+    const date = new Date(Date.UTC(year, month - 1, day));
+    if (date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) {
+      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_DATE, { parse_mode: 'Markdown' });
+      return;
+    }
+
+    session.pcDate = date;
+    await this.showPCTimeInput(chatId, session);
+  }
+
+  async handlePCTimeRangeInput(chatId, session, text) {
+    const match = text.trim().match(/^(\d{1,2}):(\d{2})\s+(\d{1,2}):(\d{2})$/);
+    if (!match) {
+      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
+      return;
+    }
+    const [_, sh, sm, eh, em] = match;
+    const startH = parseInt(sh, 10);
+    const startM = parseInt(sm, 10);
+    const endH = parseInt(eh, 10);
+    const endM = parseInt(em, 10);
+
+    if (startH > 23 || endH > 23 || startM > 59 || endM > 59) {
+      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
+      return;
+    }
+
+    const baseDate = session.pcDate;
+    const startDate = new Date(Date.UTC(
+      baseDate.getUTCFullYear(), baseDate.getUTCMonth(), baseDate.getUTCDate(),
+      startH, startM, 0
+    ));
+    const endDate = new Date(Date.UTC(
+      baseDate.getUTCFullYear(), baseDate.getUTCMonth(), baseDate.getUTCDate(),
+      endH, endM, 0
+    ));
+
+    if (endDate <= startDate) {
+      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
+      return;
+    }
+    const rangeMin = (endDate - startDate) / 60000;
+    if (rangeMin > 120) {
+      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
+      return;
+    }
+    if (endDate.getTime() > Date.now()) {
+      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
+      return;
+    }
+
+    session.pcTimeRange = {
+      startSec: Math.floor(startDate.getTime() / 1000),
+      endSec: Math.floor(endDate.getTime() / 1000)
+    };
+
+    await this.executePCFunction3(chatId, session);
+  }
+
+  async runPCScan(chatId, session, title, scanFn, resultKind) {
+    if (!this.privacyCashDetector) {
+      await this.bot.sendMessage(chatId, '❌ Privacy Cash detector not configured.');
+      return;
+    }
+    session.setState(STATES.PC_SCANNING);
+
+    const statusMsg = await this.bot.sendMessage(chatId, `${title}\n\n⏳ Scanning...`, { parse_mode: 'Markdown' });
+    const statusMessageId = statusMsg.message_id;
+
+    let lastUpdate = Date.now();
+    const logger = {
+      addLog: async (line) => {
+        console.log(`[PC] ${line}`);
+        const now = Date.now();
+        if (now - lastUpdate < 2500) return;
+        lastUpdate = now;
+        try {
+          await this.bot.editMessageText(`${title}\n\n⏳ ${line}`, {
+            chat_id: chatId,
+            message_id: statusMessageId,
+            parse_mode: 'Markdown'
+          });
+        } catch (_) { /* ignore rate limit on edits */ }
+      }
+    };
+
+    try {
+      const data = await scanFn(logger);
+      session.pcResults = { kind: resultKind, data };
+      session.pcPage = 0;
+      try {
+        await this.bot.deleteMessage(chatId, statusMessageId);
+      } catch (_) { /* ignore */ }
+      await this.renderPCResultsPage(chatId, session);
+    } catch (error) {
+      console.error(`[PC] Error: ${error.message}`);
+      try {
+        await this.bot.deleteMessage(chatId, statusMessageId);
+      } catch (_) { /* ignore */ }
+      await this.sendPCError(chatId, error.message);
+    }
+  }
+
+  async executePCFunction1(chatId, session, signature) {
+    await this.runPCScan(
+      chatId, session, '🛡️ *Privacy Cash — Function 1*',
+      (logger) => this.privacyCashDetector.detectRecipients(signature, logger),
+      'func1'
+    );
+  }
+
+  async executePCFunction2(chatId, session, signature) {
+    await this.runPCScan(
+      chatId, session, '🛡️ *Privacy Cash — Function 2*',
+      (logger) => this.privacyCashDetector.detectSender(signature, logger),
+      'func2'
+    );
+  }
+
+  async executePCFunction3(chatId, session) {
+    const { startSec, endSec } = session.pcTimeRange;
+    await this.runPCScan(
+      chatId, session, '🛡️ *Privacy Cash — Function 3*',
+      (logger) => this.privacyCashDetector.detectAllInRange(startSec, endSec, logger),
+      'func3'
+    );
+  }
+
+  async sendPCError(chatId, errorMessage) {
+    let msg;
+    if (errorMessage.includes('not found')) msg = MESSAGES.PC_TX_NOT_FOUND;
+    else if (errorMessage.includes('Privacy Cash pool')) msg = MESSAGES.PC_NOT_PRIVACY_CASH;
+    else if (errorMessage.includes('not a deposit')) msg = MESSAGES.PC_WRONG_DIRECTION_DEPOSIT;
+    else if (errorMessage.includes('not a withdrawal')) msg = MESSAGES.PC_WRONG_DIRECTION_WITHDRAWAL;
+    else msg = `❌ ${errorMessage}`;
+
+    await this.bot.sendMessage(chatId, msg, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '⬅️ Back to menu', callback_data: 'back_to_pc_menu' }]] }
+    });
+  }
+
+  shortAddr(addr) {
+    if (!addr) return '?';
+    return addr.slice(0, 6) + '...' + addr.slice(-4);
+  }
+
+  formatUTCTime(sec) {
+    const d = new Date(sec * 1000);
+    const hh = String(d.getUTCHours()).padStart(2, '0');
+    const mm = String(d.getUTCMinutes()).padStart(2, '0');
+    const ss = String(d.getUTCSeconds()).padStart(2, '0');
+    return `${hh}:${mm}:${ss}`;
+  }
+
+  renderFunc1Message(data) {
+    let text = `🛡️ *Privacy Cash — Recipients of Deposit*\n\n`;
+    text += `📤 *Sender:* \`${data.sender}\`\n`;
+    text += `💰 *Deposit:* ${data.depositSOL.toFixed(4)} SOL\n\n`;
+
+    if (data.bridged) {
+      text += `⚠️ *No recipient match found*\n\nThe funds were likely bridged to another network. Cross-chain bridge detection coming soon.`;
+      return text;
+    }
+
+    text += `📥 *Recipients (${data.recipients.length}):*\n`;
+    data.recipients.forEach((r, i) => {
+      text += `${i + 1}. \`${r.wallet}\` — ${r.amountSOL.toFixed(4)} SOL\n`;
+    });
+    return text;
+  }
+
+  renderFunc2Message(data) {
+    let text = `🛡️ *Privacy Cash — Sender of Withdrawal*\n\n`;
+    text += `📥 *Recipient:* \`${data.recipient}\`\n`;
+    text += `💰 *Withdrawal:* ${data.withdrawalSOL.toFixed(4)} SOL\n\n`;
+
+    if (data.bridged || data.senders.length === 0) {
+      text += `⚠️ *No sender match found*\n\nThe funds may have come from a bridge. Cross-chain bridge detection coming soon.`;
+      return text;
+    }
+
+    text += `📤 *Sender:*\n`;
+    data.senders.forEach((s) => {
+      text += `\`${s.wallet}\`\n💰 Deposit: ${s.amountSOL.toFixed(4)} SOL at ${this.formatUTCTime(s.blockTime)} UTC\n`;
+    });
+    return text;
+  }
+
+  renderFunc3Page(data, page) {
+    const pageSize = 5;
+    const matched = data.pairs.filter(p => !p.bridged);
+    const bridged = data.pairs.filter(p => p.bridged);
+
+    const totalPages = Math.max(1, Math.ceil(matched.length / pageSize));
+    const safePage = Math.min(page, totalPages - 1);
+    const start = safePage * pageSize;
+    const slice = matched.slice(start, start + pageSize);
+
+    const rangeStart = this.formatUTCTime(data.startSec);
+    const rangeEnd = this.formatUTCTime(data.endSec);
+    const dateStr = new Date(data.startSec * 1000).toISOString().slice(0, 10);
+
+    let text = `🛡️ *Privacy Cash — Match Results*\n`;
+    text += `📅 ${dateStr} · ${rangeStart}-${rangeEnd} UTC\n`;
+    text += `📊 ${matched.length} matched · ${bridged.length} bridged · ${data.totalDeposits} deposits\n`;
+    text += `📖 Page ${safePage + 1}/${totalPages}\n\n`;
+
+    if (matched.length === 0) {
+      text += `_No matched pairs in this range._\n`;
+    }
+
+    slice.forEach((p, idx) => {
+      const num = start + idx + 1;
+      text += `━━━━━━━━━━━━━━━\n`;
+      text += `${num}. ${this.formatUTCTime(p.depositTime)} · ${p.depositSOL.toFixed(4)} SOL\n`;
+      text += `📤 \`${p.sender}\`\n`;
+      p.recipients.forEach(r => {
+        text += `📥 \`${r.wallet}\` (${r.amountSOL.toFixed(4)} SOL)\n`;
+      });
+    });
+
+    if (bridged.length > 0 && safePage === totalPages - 1) {
+      text += `\n⚠️ *${bridged.length} bridged (no match):*\n`;
+      bridged.slice(0, 5).forEach(p => {
+        text += `• \`${this.shortAddr(p.sender)}\` — ${p.depositSOL.toFixed(4)} SOL at ${this.formatUTCTime(p.depositTime)}\n`;
+      });
+      if (bridged.length > 5) text += `_…and ${bridged.length - 5} more_\n`;
+    }
+
+    return { text, safePage, totalPages };
+  }
+
+  async renderPCResultsPage(chatId, session, messageId = null) {
+    session.setState(STATES.PC_RESULTS);
+    const results = session.pcResults;
+    if (!results) return;
+
+    let text;
+    let keyboard;
+
+    if (results.kind === 'func1') {
+      text = this.renderFunc1Message(results.data);
+      keyboard = {
+        inline_keyboard: [
+          [{ text: '⬅️ Back to menu', callback_data: 'back_to_pc_menu' }]
+        ]
+      };
+    } else if (results.kind === 'func2') {
+      text = this.renderFunc2Message(results.data);
+      keyboard = {
+        inline_keyboard: [
+          [{ text: '⬅️ Back to menu', callback_data: 'back_to_pc_menu' }]
+        ]
+      };
+    } else {
+      const rendered = this.renderFunc3Page(results.data, session.pcPage || 0);
+      text = rendered.text;
+      session.pcPage = rendered.safePage;
+
+      const navRow = [];
+      if (rendered.safePage > 0) navRow.push({ text: '⬅️ Previous', callback_data: 'pc_page_prev' });
+      navRow.push({ text: `${rendered.safePage + 1}/${rendered.totalPages}`, callback_data: 'pc_noop' });
+      if (rendered.safePage < rendered.totalPages - 1) navRow.push({ text: 'Next ➡️', callback_data: 'pc_page_next' });
+
+      keyboard = {
+        inline_keyboard: [
+          navRow,
+          [{ text: '⬅️ Back to menu', callback_data: 'back_to_pc_menu' }]
+        ]
+      };
+    }
+
+    if (messageId) {
+      try {
+        await this.bot.editMessageText(text, {
+          chat_id: chatId,
+          message_id: messageId,
+          parse_mode: 'Markdown',
+          reply_markup: keyboard
+        });
+        return;
+      } catch (e) {
+        // fallthrough to send new
+      }
+    }
+
+    await this.bot.sendMessage(chatId, text, {
+      parse_mode: 'Markdown',
+      reply_markup: keyboard
+    });
   }
 
   async handleFilterInput(chatId, session, text) {
