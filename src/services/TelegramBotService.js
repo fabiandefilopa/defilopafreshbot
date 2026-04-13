@@ -762,11 +762,14 @@ class TelegramBotService {
     slice.forEach((p, idx) => {
       const num = start + idx + 1;
       text += `━━━━━━━━━━━━━━━\n`;
-      text += `${num}. ${this.formatUTCTime(p.depositTime)} · ${p.depositSOL.toFixed(4)} SOL\n`;
-      text += `📤 \`${p.sender}\`\n`;
+      text += `*${num}.* ${this.formatUTCTime(p.depositTime)} · ${p.depositSOL.toFixed(4)} SOL\n\n`;
+      text += `📤 *Sender:*\n\`${p.sender}\`\n\n`;
+      const label = p.recipients.length > 1 ? 'Recipients' : 'Recipient';
+      text += `📥 *${label}:*\n`;
       p.recipients.forEach(r => {
-        text += `📥 \`${r.wallet}\` (${r.amountSOL.toFixed(4)} SOL)\n`;
+        text += `\`${r.wallet}\` — ${r.amountSOL.toFixed(4)} SOL\n`;
       });
+      text += `\n`;
     });
 
     if (bridged.length > 0 && safePage === totalPages - 1) {
