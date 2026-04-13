@@ -49,7 +49,7 @@ Send me the *withdrawal tx signature* (the tx where a wallet received funds from
 _Example:_
 \`4Xm7gSE8BG7rWvbL9gkbX1HxobGU5r9PhRKVK6gz7ynKtpcjzpqzet5k8tbNXLdPsevLTSee6so76ikGsRSycuhQ\`
 
-I'll match against deposits in a ±3 min window around the withdrawal.`,
+I'll match against deposits in a ±5 min window around the withdrawal.`,
 
   PC_FUNC3_DATE: `3️⃣ *Match all in time range*
 

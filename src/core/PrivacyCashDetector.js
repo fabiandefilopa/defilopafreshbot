@@ -141,7 +141,7 @@ export class PrivacyCashDetector {
     const startSec = withdrawalTime - PRIVACY_CASH.FUNC2_WINDOW_SEC;
     const endSec = withdrawalTime + PRIVACY_CASH.FUNC2_WINDOW_SEC;
 
-    if (progressTracker) progressTracker.addLog(`Loading pool activity (±3min window)...`);
+    if (progressTracker) progressTracker.addLog(`Loading pool activity (±5min window)...`);
     const activity = await this.service.loadPoolActivity(startSec, endSec, progressTracker);
 
     const deposits = activity.filter(t => t.direction === 'deposit');
