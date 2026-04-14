@@ -241,7 +241,7 @@ class TelegramBotService {
 
   async showPCTimeInput(chatId, session) {
     session.setState(STATES.PC_FUNC3_TIME_INPUT);
-    const dateStr = session.pcDate.toISOString().slice(0, 10);
+    const dateStr = this.formatUTCDate(session.pcDate);
     const now = new Date();
     const nowUTC = `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
     const header = `📅 Date: *${dateStr}* (UTC)\n🕒 Current UTC time: *${nowUTC}*\n\n`;
@@ -593,8 +593,8 @@ class TelegramBotService {
     const now = new Date();
     if (endDate.getTime() > now.getTime()) {
       const nowUTC = `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
-      const nowDate = now.toISOString().slice(0, 10);
-      const selectedDate = baseDate.toISOString().slice(0, 10);
+      const nowDate = this.formatUTCDate(now);
+      const selectedDate = this.formatUTCDate(baseDate);
       return sendErr(
         `End time is in the future.\n` +
         `• Current UTC: *${nowDate} ${nowUTC}*\n` +
@@ -707,6 +707,14 @@ class TelegramBotService {
     return `${hh}:${mm}:${ss}`;
   }
 
+  formatUTCDate(date) {
+    const d = date instanceof Date ? date : new Date(date);
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const yyyy = d.getUTCFullYear();
+    return `${dd}-${mm}-${yyyy}`;
+  }
+
   renderFunc1Message(data) {
     let text = `🛡️ *Privacy Cash — Recipients of Deposit*\n\n`;
     text += `📤 *Sender:* \`${data.sender}\`\n`;
@@ -761,7 +769,7 @@ class TelegramBotService {
 
     const rangeStart = this.formatUTCTime(data.startSec);
     const rangeEnd = this.formatUTCTime(data.endSec);
-    const dateStr = new Date(data.startSec * 1000).toISOString().slice(0, 10);
+    const dateStr = this.formatUTCDate(new Date(data.startSec * 1000));
 
     let text = `🛡️ *Privacy Cash — Match Results*\n`;
     text += `📅 ${dateStr} · ${rangeStart}-${rangeEnd} UTC\n`;
