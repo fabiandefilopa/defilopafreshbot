@@ -242,7 +242,10 @@ class TelegramBotService {
   async showPCTimeInput(chatId, session) {
     session.setState(STATES.PC_FUNC3_TIME_INPUT);
     const dateStr = session.pcDate.toISOString().slice(0, 10);
-    await this.bot.sendMessage(chatId, `📅 Date: *${dateStr}* (UTC)\n\n${MESSAGES.PC_FUNC3_TIME}`, {
+    const now = new Date();
+    const nowUTC = `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
+    const header = `📅 Date: *${dateStr}* (UTC)\n🕒 Current UTC time: *${nowUTC}*\n\n`;
+    await this.bot.sendMessage(chatId, header + MESSAGES.PC_FUNC3_TIME, {
       parse_mode: 'Markdown',
       reply_markup: { inline_keyboard: [[{ text: '⬅️ Back', callback_data: 'pc_func3' }]] }
     });
@@ -550,10 +553,15 @@ class TelegramBotService {
   }
 
   async handlePCTimeRangeInput(chatId, session, text) {
+    const sendErr = (reason) => this.bot.sendMessage(
+      chatId,
+      `❌ *Invalid time range*\n\n${reason}\n\nFormat: \`HH:MM HH:MM\` (UTC)`,
+      { parse_mode: 'Markdown' }
+    );
+
     const match = text.trim().match(/^(\d{1,2}):(\d{2})\s+(\d{1,2}):(\d{2})$/);
     if (!match) {
-      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
-      return;
+      return sendErr('Format not recognized. Example: `19:00 19:30`.');
     }
     const [_, sh, sm, eh, em] = match;
     const startH = parseInt(sh, 10);
@@ -562,8 +570,7 @@ class TelegramBotService {
     const endM = parseInt(em, 10);
 
     if (startH > 23 || endH > 23 || startM > 59 || endM > 59) {
-      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
-      return;
+      return sendErr('Hours must be 0-23 and minutes 0-59.');
     }
 
     const baseDate = session.pcDate;
@@ -577,17 +584,23 @@ class TelegramBotService {
     ));
 
     if (endDate <= startDate) {
-      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
-      return;
+      return sendErr('End time must be after start time.');
     }
     const rangeMin = (endDate - startDate) / 60000;
     if (rangeMin > 120) {
-      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
-      return;
+      return sendErr(`Range is ${Math.floor(rangeMin)} min. Maximum is 120 min (2 hours).`);
     }
-    if (endDate.getTime() > Date.now()) {
-      await this.bot.sendMessage(chatId, MESSAGES.PC_INVALID_TIME_RANGE, { parse_mode: 'Markdown' });
-      return;
+    const now = new Date();
+    if (endDate.getTime() > now.getTime()) {
+      const nowUTC = `${String(now.getUTCHours()).padStart(2, '0')}:${String(now.getUTCMinutes()).padStart(2, '0')}`;
+      const nowDate = now.toISOString().slice(0, 10);
+      const selectedDate = baseDate.toISOString().slice(0, 10);
+      return sendErr(
+        `End time is in the future.\n` +
+        `• Current UTC: *${nowDate} ${nowUTC}*\n` +
+        `• You selected: *${selectedDate} ${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}*\n\n` +
+        `_Tip: All times are UTC. If you're in UTC-3, your local 21:00 is already 00:00 UTC of the next day — pick "Yesterday" to query earlier hours._`
+      );
     }
 
     session.pcTimeRange = {
