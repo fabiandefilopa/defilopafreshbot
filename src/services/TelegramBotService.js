@@ -29,6 +29,7 @@ class TelegramBotService {
     this.bot.onText(/\/start/, (msg) => this.handleStart(msg));
     this.bot.onText(/\/cancel/, (msg) => this.handleCancel(msg));
     this.bot.onText(/\/help/, (msg) => this.handleHelp(msg));
+    this.bot.onText(/\/faq/, (msg) => this.handleFaq(msg.chat.id));
 
     // Callback queries (button clicks)
     this.bot.on('callback_query', (query) => this.handleCallbackQuery(query));
@@ -55,7 +56,10 @@ class TelegramBotService {
         [{ text: '🆕 Fresh Wallet Scanner', callback_data: 'feature_fresh' }],
         [{ text: '🛡️ Privacy Cash Scanner', callback_data: 'feature_privacy' }],
         [{ text: '🔔 Alerts (Coming Soon)', callback_data: 'feature_alerts_soon' }],
-        [{ text: '📖 Help', callback_data: 'show_help' }]
+        [
+          { text: '❓ FAQ', callback_data: 'show_faq' },
+          { text: '📖 Help', callback_data: 'show_help' }
+        ]
       ]
     };
 
@@ -67,7 +71,17 @@ class TelegramBotService {
 
   async handleHelp(msg) {
     const chatId = msg.chat.id;
-    await this.bot.sendMessage(chatId, MESSAGES.HELP, { parse_mode: 'Markdown' });
+    await this.bot.sendMessage(chatId, MESSAGES.HELP, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '⬅️ Back to menu', callback_data: 'back_to_features' }]] }
+    });
+  }
+
+  async handleFaq(chatId) {
+    await this.bot.sendMessage(chatId, MESSAGES.FAQ, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '⬅️ Back to menu', callback_data: 'back_to_features' }]] }
+    });
   }
 
   async handleCallbackQuery(query) {
@@ -96,6 +110,8 @@ class TelegramBotService {
       await this.showPrivacyCashMenu(chatId, session);
     } else if (data === 'show_help') {
       await this.handleHelp({ chat: { id: chatId } });
+    } else if (data === 'show_faq') {
+      await this.handleFaq(chatId);
     } else if (data.startsWith('feature_') && data.endsWith('_soon')) {
       await this.bot.sendMessage(chatId, '⏰ Coming soon! Stay tuned.');
     } else if (data.startsWith('toggle_exchange_')) {

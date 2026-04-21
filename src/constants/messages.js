@@ -149,6 +149,69 @@ _Examples:_
 🎯 Target → \`2.5\``;
   },
 
+  FAQ: `❓ *SOLFINDER — FAQ*
+━━━━━━━━━━━━━━━━━━━
+
+*General*
+
+*What is SOLFINDER?*
+A Telegram bot for Solana blockchain intelligence. It detects fresh wallets funded from exchanges and traces funds through Privacy Cash.
+
+*Do I need to connect my wallet?*
+No. SOLFINDER is read-only — it only reads public on-chain data. No wallet connection, no private keys, no sign-ups.
+
+*What blockchain does it support?*
+Solana only. More chains may come in the future.
+
+━━━━━━━━━━━━━━━━━━━
+*Fresh Wallet Scanner*
+
+*What is a fresh wallet?*
+A wallet that has only received SOL and never sent anything — typically a brand-new wallet.
+
+*What is hopping mode?*
+It follows money through intermediate wallets (up to 3 hops). Example: Exchange → A → B → C. Catches wallets hiding their origin.
+
+*How many exchanges?*
+15+ including Binance, OKX, Bybit, Kucoin, MEXC, Coinbase and more. You can select multiple at once.
+
+━━━━━━━━━━━━━━━━━━━
+*Privacy Cash Scanner*
+
+*How does it trace mixer transactions?*
+By matching the amounts and timing of deposits/withdrawals from the Privacy Cash pool using smart analysis.
+
+*Does it break encryption?*
+No. It only uses public transaction data — amounts, timestamps, and addresses visible to everyone on-chain.
+
+*What is "bridged"?*
+When a deposit can't be matched to any Solana withdrawal — the funds likely left to another network (ETH, BNB, etc.).
+
+*Why no sender found?*
+Either the deposit was >5 min away, the funds were bridged, or split into too many small withdrawals.
+
+*What are "other recipients"?*
+If a 15 SOL deposit exits as 7 SOL to Wallet X and 8 SOL to Wallet Y, both are shown when you query either one.
+
+━━━━━━━━━━━━━━━━━━━
+*Troubleshooting*
+
+*"Invalid time range" error?*
+Your end time is in the future (UTC). If you're in UTC-3 and it's 21:00 local, it's 00:00 UTC next day — pick "Yesterday".
+
+*Bot is slow?*
+Large scans (2h range) can take 30-60s. If no response after 2 min, send /cancel and retry.
+
+*"Not a Privacy Cash transaction"?*
+Make sure the tx has "Privacy Cash: Transact" on Solscan.
+
+━━━━━━━━━━━━━━━━━━━
+*Security*
+
+• Your interactions are private Telegram messages
+• SOLFINDER cannot move funds or access wallets
+• No data is stored permanently`,
+
   HELP: `📖 *SOLFINDER — Help*
 ━━━━━━━━━━━━━━━━━━━
 
