@@ -4,6 +4,7 @@ import { FreshWalletDetector } from '../core/FreshWalletDetector.js';
 import { ProgressTracker } from '../utils/ProgressTracker.js';
 import { STATES } from '../constants/states.js';
 import { MESSAGES } from '../constants/messages.js';
+import { RateLimiter } from '../utils/RateLimiter.js';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -21,6 +22,7 @@ class TelegramBotService {
     this.solanaService = solanaService;
     this.exchangeConfig = exchangeConfig;
     this.privacyCashDetector = privacyCashDetector;
+    this.rateLimiter = new RateLimiter();
 
     this.sessions = new Map(); // chatId -> UserSession
 
@@ -36,6 +38,7 @@ class TelegramBotService {
     this.bot.onText(/\/cancel/, (msg) => this.handleCancel(msg));
     this.bot.onText(/\/help/, (msg) => this.handleHelp(msg));
     this.bot.onText(/\/faq/, (msg) => this.handleFaq(msg.chat.id));
+    this.bot.onText(/\/quota/, (msg) => this.handleQuota(msg.chat.id));
 
     // Callback queries (button clicks)
     this.bot.on('callback_query', (query) => this.handleCallbackQuery(query));
@@ -91,6 +94,23 @@ class TelegramBotService {
   async handleHelp(msg) {
     const chatId = msg.chat.id;
     await this.bot.sendMessage(chatId, MESSAGES.HELP, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '⬅️ Back to menu', callback_data: 'back_to_features' }]] }
+    });
+  }
+
+  async handleQuota(chatId) {
+    const stats = this.rateLimiter.getStats(chatId);
+    const line = (label, s) => `${label}: *${s.used}/${s.cap}* used · _${s.remaining} left_`;
+    const text = `📊 *Your Daily Quota*\n` +
+      `━━━━━━━━━━━━━━━━━━━\n` +
+      `${line('🆕 Fresh Wallet scans', stats.fresh)}\n` +
+      `${line('📤 Recipient lookups', stats.func1)}\n` +
+      `${line('📥 Sender lookups', stats.func2)}\n` +
+      `${line('📊 Time-window scans', stats.func3)}\n\n` +
+      `_Quotas reset 24h after each use._\n` +
+      `_Time-window scans have a 3 min cooldown between runs._`;
+    await this.bot.sendMessage(chatId, text, {
       parse_mode: 'Markdown',
       reply_markup: { inline_keyboard: [[{ text: '⬅️ Back to menu', callback_data: 'back_to_features' }]] }
     });
@@ -722,6 +742,8 @@ class TelegramBotService {
   }
 
   async executePCFunction1(chatId, session, signature) {
+    if (!(await this._enforceLimit(chatId, 'func1'))) return;
+    this.rateLimiter.record(chatId, 'func1');
     await this.runPCScan(
       chatId, session, '🔎 *SOLFINDER — Tracing Recipients*',
       (logger) => this.privacyCashDetector.detectRecipients(signature, logger),
@@ -730,6 +752,8 @@ class TelegramBotService {
   }
 
   async executePCFunction2(chatId, session, signature) {
+    if (!(await this._enforceLimit(chatId, 'func2'))) return;
+    this.rateLimiter.record(chatId, 'func2');
     await this.runPCScan(
       chatId, session, '🔎 *SOLFINDER — Tracing Sender*',
       (logger) => this.privacyCashDetector.detectSender(signature, logger),
@@ -738,12 +762,28 @@ class TelegramBotService {
   }
 
   async executePCFunction3(chatId, session) {
+    if (!(await this._enforceLimit(chatId, 'func3'))) return;
+    this.rateLimiter.record(chatId, 'func3');
     const { startSec, endSec } = session.pcTimeRange;
-    await this.runPCScan(
-      chatId, session, '🔎 *SOLFINDER — Scanning Time Window*',
-      (logger) => this.privacyCashDetector.detectAllInRange(startSec, endSec, logger),
-      'func3'
-    );
+    try {
+      await this.runPCScan(
+        chatId, session, '🔎 *SOLFINDER — Scanning Time Window*',
+        (logger) => this.privacyCashDetector.detectAllInRange(startSec, endSec, logger),
+        'func3'
+      );
+    } finally {
+      this.rateLimiter.release('func3');
+    }
+  }
+
+  async _enforceLimit(chatId, action) {
+    const check = this.rateLimiter.check(chatId, action);
+    if (check.allowed) return true;
+    await this.bot.sendMessage(chatId, check.message, {
+      parse_mode: 'Markdown',
+      reply_markup: { inline_keyboard: [[{ text: '⬅️ Back to menu', callback_data: 'back_to_features' }]] }
+    });
+    return false;
   }
 
   async sendPCError(chatId, errorMessage) {
@@ -1239,8 +1279,6 @@ class TelegramBotService {
   }
 
   async executeScan(chatId, session) {
-    session.setState(STATES.SCANNING);
-
     if (session.selectedExchanges.length === 0) {
       await this.bot.sendMessage(chatId, '❌ No exchanges selected');
       return;
@@ -1250,6 +1288,10 @@ class TelegramBotService {
       await this.bot.sendMessage(chatId, '❌ No scan type selected');
       return;
     }
+
+    if (!(await this._enforceLimit(chatId, 'fresh'))) return;
+    this.rateLimiter.record(chatId, 'fresh');
+    session.setState(STATES.SCANNING);
 
     if (!session.timeRange) {
       await this.bot.sendMessage(chatId, '❌ No time range selected');

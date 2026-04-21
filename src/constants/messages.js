@@ -289,6 +289,13 @@ Traces funds through Privacy Cash mixer.
 /start — Main menu
 /cancel — Cancel current operation
 /help — This help message
+/faq — Frequently asked questions
+/quota — Check your daily usage
+
+*Daily limits per user:*
+• Fresh Wallet scans: 10/day
+• Recipient / Sender lookups: 20/day each
+• Time-window scans: 3/day (3 min cooldown)
 
 *Tips:*
 • Hopping mode follows up to 3 intermediate wallets
