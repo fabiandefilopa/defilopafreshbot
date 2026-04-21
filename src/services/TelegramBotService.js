@@ -78,9 +78,32 @@ class TelegramBotService {
   }
 
   async handleFaq(chatId) {
-    await this.bot.sendMessage(chatId, MESSAGES.FAQ, {
+    const keyboard = {
+      inline_keyboard: [
+        [{ text: '🌐 General & Basics', callback_data: 'faq_general' }],
+        [{ text: '🆕 Fresh Wallet Scanner', callback_data: 'faq_fresh' }],
+        [{ text: '🛡️ Privacy Cash Scanner', callback_data: 'faq_privacy' }],
+        [{ text: '🔧 Troubleshooting & Security', callback_data: 'faq_troubleshooting' }],
+        [{ text: '⬅️ Back to menu', callback_data: 'back_to_features' }]
+      ]
+    };
+    await this.bot.sendMessage(chatId, MESSAGES.FAQ_MENU, {
       parse_mode: 'Markdown',
-      reply_markup: { inline_keyboard: [[{ text: '⬅️ Back to menu', callback_data: 'back_to_features' }]] }
+      reply_markup: keyboard
+    });
+  }
+
+  async sendFaqSection(chatId, section) {
+    const msg = MESSAGES[`FAQ_${section.toUpperCase()}`];
+    if (!msg) return;
+    await this.bot.sendMessage(chatId, msg, {
+      parse_mode: 'Markdown',
+      reply_markup: {
+        inline_keyboard: [
+          [{ text: '⬅️ Back to FAQ', callback_data: 'show_faq' }],
+          [{ text: '🏠 Main menu', callback_data: 'back_to_features' }]
+        ]
+      }
     });
   }
 
@@ -112,6 +135,14 @@ class TelegramBotService {
       await this.handleHelp({ chat: { id: chatId } });
     } else if (data === 'show_faq') {
       await this.handleFaq(chatId);
+    } else if (data === 'faq_general') {
+      await this.sendFaqSection(chatId, 'general');
+    } else if (data === 'faq_fresh') {
+      await this.sendFaqSection(chatId, 'fresh');
+    } else if (data === 'faq_privacy') {
+      await this.sendFaqSection(chatId, 'privacy');
+    } else if (data === 'faq_troubleshooting') {
+      await this.sendFaqSection(chatId, 'troubleshooting');
     } else if (data.startsWith('feature_') && data.endsWith('_soon')) {
       await this.bot.sendMessage(chatId, '⏰ Coming soon! Stay tuned.');
     } else if (data.startsWith('toggle_exchange_')) {
