@@ -1,5 +1,7 @@
 # SOLFINDER
 
+> 🇬🇧 **Prefer to read in English?** → [View English documentation](../)
+
 **Inteligencia on-chain para wallets de Solana.**
 
 SOLFINDER es un bot de Telegram que te ayuda a rastrear y analizar la actividad de wallets en la blockchain de Solana. Combina dos herramientas:

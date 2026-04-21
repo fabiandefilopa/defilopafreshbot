@@ -1,7 +1,7 @@
 # SOL FINDER
 
-\
-\
+> 🇪🇸 **¿Preferís leer en español?** → [Ver documentación en español](es/)
+
 **On-chain intelligence for Solana wallets.**
 
 <figure><img src=".gitbook/assets/banner.png" alt=""><figcaption></figcaption></figure>
