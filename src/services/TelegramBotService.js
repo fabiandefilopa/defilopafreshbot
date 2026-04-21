@@ -54,7 +54,8 @@ class TelegramBotService {
       inline_keyboard: [
         [{ text: '🆕 Fresh Wallet Scanner', callback_data: 'feature_fresh' }],
         [{ text: '🛡️ Privacy Cash Scanner', callback_data: 'feature_privacy' }],
-        [{ text: '🔔 Alerts (Coming Soon)', callback_data: 'feature_alerts_soon' }]
+        [{ text: '🔔 Alerts (Coming Soon)', callback_data: 'feature_alerts_soon' }],
+        [{ text: '📖 Help', callback_data: 'show_help' }]
       ]
     };
 
@@ -93,6 +94,8 @@ class TelegramBotService {
       await this.showExchangeSelection(chatId, session);
     } else if (data === 'feature_privacy') {
       await this.showPrivacyCashMenu(chatId, session);
+    } else if (data === 'show_help') {
+      await this.handleHelp({ chat: { id: chatId } });
     } else if (data.startsWith('feature_') && data.endsWith('_soon')) {
       await this.bot.sendMessage(chatId, '⏰ Coming soon! Stay tuned.');
     } else if (data.startsWith('toggle_exchange_')) {
@@ -187,9 +190,9 @@ class TelegramBotService {
 
     const keyboard = {
       inline_keyboard: [
-        [{ text: '1️⃣ Recipients of a deposit', callback_data: 'pc_func1' }],
-        [{ text: '2️⃣ Sender of a withdrawal', callback_data: 'pc_func2' }],
-        [{ text: '3️⃣ Match all in time range', callback_data: 'pc_func3' }],
+        [{ text: '📤 Where did the money go?', callback_data: 'pc_func1' }],
+        [{ text: '📥 Where did it come from?', callback_data: 'pc_func2' }],
+        [{ text: '📊 Scan a time window', callback_data: 'pc_func3' }],
         [{ text: '⬅️ Back', callback_data: 'back_to_features' }]
       ]
     };
@@ -414,19 +417,15 @@ class TelegramBotService {
 
     await this.bot.sendMessage(
       chatId,
-      `🔍 *Select Scan Type*\n\n` +
-      `Selected Exchanges: *${exchangeNames}*\n\n` +
-      `⚡ *Fresh Wallets (Simple)*\n` +
-      `   • Fast scan\n` +
-      `   • Detects wallets that received funds and never moved them\n` +
-      `   • No intermediate wallet tracking\n\n` +
-      `🔗 *Fresh Wallets with Hopping*\n` +
-      `   • Complete and thorough scan\n` +
-      `   • A "hop" is when a wallet receives funds and immediately sends them to another wallet, like a chain of middlemen\n` +
-      `   • Example: Exchange → Wallet A → Wallet B → Wallet C\n` +
-      `     That's 2 hops. The bot follows the money trail up to 3 hops to find the final destination wallet\n` +
-      `   • Useful to detect wallets that try to hide their origin by passing funds through intermediaries\n` +
-      `   • Slower but catches wallets that Simple mode would miss`,
+      `🔍 *Select Scan Mode*\n` +
+      `━━━━━━━━━━━━━━━━━━━\n` +
+      `Exchanges: *${exchangeNames}*\n\n` +
+      `⚡ *Simple*\n` +
+      `Direct transfers only. Fast scan — finds wallets that received funds straight from the exchange and never moved them.\n\n` +
+      `🔗 *Hopping Mode*\n` +
+      `Follows the money trail up to 3 hops:\n` +
+      `Exchange → A → B → C\n` +
+      `Catches wallets that hide their origin behind intermediaries. Slower but more thorough.`,
       {
         parse_mode: 'Markdown',
         reply_markup: keyboard
@@ -464,9 +463,10 @@ class TelegramBotService {
 
     await this.bot.sendMessage(
       chatId,
-      `🔍 *Fresh Wallet Scanner*\n\n` +
-      `Selected Exchanges: *${exchangeNames}*\n` +
-      `Scan Type: *${scanTypeText}*\n\n` +
+      `🔍 *Fresh Wallet Scanner*\n` +
+      `━━━━━━━━━━━━━━━━━━━\n` +
+      `Exchanges: *${exchangeNames}*\n` +
+      `Mode: *${scanTypeText}*\n\n` +
       `${MESSAGES.ENTER_FILTER}`,
       {
         parse_mode: 'Markdown',
@@ -657,7 +657,7 @@ class TelegramBotService {
 
   async executePCFunction1(chatId, session, signature) {
     await this.runPCScan(
-      chatId, session, '🛡️ *Privacy Cash — Function 1*',
+      chatId, session, '🔎 *SOLFINDER — Tracing Recipients*',
       (logger) => this.privacyCashDetector.detectRecipients(signature, logger),
       'func1'
     );
@@ -665,7 +665,7 @@ class TelegramBotService {
 
   async executePCFunction2(chatId, session, signature) {
     await this.runPCScan(
-      chatId, session, '🛡️ *Privacy Cash — Function 2*',
+      chatId, session, '🔎 *SOLFINDER — Tracing Sender*',
       (logger) => this.privacyCashDetector.detectSender(signature, logger),
       'func2'
     );
@@ -674,7 +674,7 @@ class TelegramBotService {
   async executePCFunction3(chatId, session) {
     const { startSec, endSec } = session.pcTimeRange;
     await this.runPCScan(
-      chatId, session, '🛡️ *Privacy Cash — Function 3*',
+      chatId, session, '🔎 *SOLFINDER — Scanning Time Window*',
       (logger) => this.privacyCashDetector.detectAllInRange(startSec, endSec, logger),
       'func3'
     );
@@ -716,41 +716,48 @@ class TelegramBotService {
   }
 
   renderFunc1Message(data) {
-    let text = `🛡️ *Privacy Cash — Recipients of Deposit*\n\n`;
-    text += `📤 *Sender:* \`${data.sender}\`\n`;
-    text += `💰 *Deposit:* ${data.depositSOL.toFixed(4)} SOL\n\n`;
+    let text = `🔎 *SOLFINDER — Where Did the Money Go?*\n`;
+    text += `━━━━━━━━━━━━━━━━━━━\n\n`;
+    text += `📤 *Sender:*\n\`${data.sender}\`\n`;
+    text += `💰 *Deposited:* ${data.depositSOL.toFixed(4)} SOL\n\n`;
 
     if (data.bridged) {
-      text += `⚠️ *No recipient match found*\n\nThe funds were likely bridged to another network. Cross-chain bridge detection coming soon.`;
+      text += `⚠️ *No match on Solana*\n\n`;
+      text += `The funds were likely bridged to another network (ETH, BNB, etc.).\n`;
+      text += `_Cross-chain detection coming soon._`;
       return text;
     }
 
-    text += `📥 *Recipients (${data.recipients.length}):*\n`;
+    text += `📥 *Received by (${data.recipients.length}):*\n\n`;
     data.recipients.forEach((r, i) => {
-      text += `${i + 1}. \`${r.wallet}\` — ${r.amountSOL.toFixed(4)} SOL\n`;
+      text += `${i + 1}. \`${r.wallet}\`\n   ${r.amountSOL.toFixed(4)} SOL\n\n`;
     });
     return text;
   }
 
   renderFunc2Message(data) {
-    let text = `🛡️ *Privacy Cash — Sender of Withdrawal*\n\n`;
-    text += `📥 *Your recipient:* \`${data.recipient}\`\n`;
-    text += `💰 *Withdrawal:* ${data.withdrawalSOL.toFixed(4)} SOL\n\n`;
+    let text = `🔎 *SOLFINDER — Where Did the Money Come From?*\n`;
+    text += `━━━━━━━━━━━━━━━━━━━\n\n`;
+    text += `📥 *Recipient:*\n\`${data.recipient}\`\n`;
+    text += `💰 *Received:* ${data.withdrawalSOL.toFixed(4)} SOL\n\n`;
 
     if (data.bridged || data.senders.length === 0) {
-      text += `⚠️ *No sender match found*\n\nThe funds may have come from a bridge. Cross-chain bridge detection coming soon.`;
+      text += `⚠️ *No match on Solana*\n\n`;
+      text += `The funds may have been bridged from another network.\n`;
+      text += `_Cross-chain detection coming soon._`;
       return text;
     }
 
-    text += `📤 *Sender:*\n`;
+    text += `📤 *Original sender:*\n`;
     data.senders.forEach((s) => {
-      text += `\`${s.wallet}\`\n💰 Deposit: ${s.amountSOL.toFixed(4)} SOL at ${this.formatUTCTime(s.blockTime)} UTC\n`;
+      text += `\`${s.wallet}\`\n`;
+      text += `💰 Deposited ${s.amountSOL.toFixed(4)} SOL at ${this.formatUTCTime(s.blockTime)} UTC\n`;
     });
 
     if (data.coRecipients && data.coRecipients.length > 0) {
-      text += `\n🔗 *Other recipients from the same deposit:*\n`;
+      text += `\n🔗 *Other recipients from this deposit:*\n\n`;
       data.coRecipients.forEach((r) => {
-        text += `\`${r.wallet}\` — ${r.amountSOL.toFixed(4)} SOL\n`;
+        text += `\`${r.wallet}\`\n${r.amountSOL.toFixed(4)} SOL\n\n`;
       });
     }
 
@@ -771,13 +778,14 @@ class TelegramBotService {
     const rangeEnd = this.formatUTCTime(data.endSec);
     const dateStr = this.formatUTCDate(new Date(data.startSec * 1000));
 
-    let text = `🛡️ *Privacy Cash — Match Results*\n`;
-    text += `📅 ${dateStr} · ${rangeStart}-${rangeEnd} UTC\n`;
-    text += `📊 ${matched.length} matched · ${bridged.length} bridged · ${data.totalDeposits} deposits\n`;
-    text += `📖 Page ${safePage + 1}/${totalPages}\n\n`;
+    let text = `🔎 *SOLFINDER — Time Window Scan*\n`;
+    text += `━━━━━━━━━━━━━━━━━━━\n`;
+    text += `📅 ${dateStr} · ${rangeStart}–${rangeEnd} UTC\n`;
+    text += `✅ ${matched.length} matched · ⚠️ ${bridged.length} bridged · 📊 ${data.totalDeposits} total\n`;
+    text += `Page ${safePage + 1} of ${totalPages}\n\n`;
 
     if (matched.length === 0) {
-      text += `_No matched pairs in this range._\n`;
+      text += `_No matched pairs found in this range._\n`;
     }
 
     slice.forEach((p, idx) => {
@@ -794,7 +802,7 @@ class TelegramBotService {
     });
 
     if (bridged.length > 0 && safePage === totalPages - 1) {
-      text += `\n⚠️ *${bridged.length} bridged (no match):*\n`;
+      text += `⚠️ *${bridged.length} likely bridged (no Solana match):*\n`;
       bridged.slice(0, 5).forEach(p => {
         text += `• \`${this.shortAddr(p.sender)}\` — ${p.depositSOL.toFixed(4)} SOL at ${this.formatUTCTime(p.depositTime)}\n`;
       });

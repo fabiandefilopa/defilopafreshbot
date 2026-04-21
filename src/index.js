@@ -18,7 +18,7 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
-console.log('🚀 Starting Solana Fresh Wallet Detector Bot...\n');
+console.log('🔎 Starting SOLFINDER Bot...\n');
 
 // Configuration
 const config = {
@@ -73,7 +73,7 @@ const telegramBot = new TelegramBotService(
 );
 
 console.log('✅ Bot initialized successfully');
-console.log('\n🎉 Fresh Wallet Detector Bot is running!');
+console.log('\n🔎 SOLFINDER is running!');
 console.log('📱 Send /start to your bot to begin\n');
 
 // Graceful shutdown

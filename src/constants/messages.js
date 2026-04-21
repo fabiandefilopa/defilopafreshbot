@@ -1,170 +1,180 @@
 /**
- * Bot UI messages (English)
+ * Bot UI messages — SOLFINDER
  */
 export const MESSAGES = {
-  WELCOME: `🤖 *DEFILOPA SOL BOT*
-
-On-chain intelligence for Solana wallets.
-
-*Available tools:*
+  WELCOME: `🔎 *SOLFINDER*
+━━━━━━━━━━━━━━━━━━━
+_On-chain intelligence for Solana._
 
 🆕 *Fresh Wallet Scanner*
-Detects brand-new wallets receiving funds from major exchanges (Binance, OKX, Bybit, etc.). Useful to spot smart-money entries before they move.
+Track smart-money entries — detect brand-new wallets funded from Binance, OKX, Bybit & 12 more exchanges. Spot them before they move.
 
 🛡️ *Privacy Cash Scanner*
-Detects wallets interacting with Privacy Cash mixers/protocols on Solana. Useful to flag obfuscated funds and trace their on-chain footprint.
+Break mixer anonymity — trace deposits and withdrawals through Privacy Cash. Find who sent, who received, and match them.
 
-*Select a tool:*`,
+🔔 *Alerts* _(Coming Soon)_
+Get notified in real time when specific patterns appear on-chain.
+
+━━━━━━━━━━━━━━━━━━━
+Choose a tool below to get started:`,
 
   PRIVACY_CASH_MENU: `🛡️ *Privacy Cash Scanner*
+━━━━━━━━━━━━━━━━━━━
+_Trace funds flowing through Privacy Cash on Solana._
 
-Trace funds flowing through Privacy Cash on Solana.
+Choose a detection method:
 
-*Available detections:*
+1️⃣ *Where did the money go?*
+Paste a deposit tx → get the recipient wallet(s).
 
-1️⃣ *Recipients of a deposit*
-Given a deposit tx, find the wallet(s) that received the funds on the other side.
+2️⃣ *Where did the money come from?*
+Paste a withdrawal tx → get the original sender.
 
-2️⃣ *Sender of a withdrawal*
-Given a withdrawal tx, find the wallet that originally deposited the funds.
+3️⃣ *Scan a time window*
+Pick a date & hour range → see all matched pairs.`,
 
-3️⃣ *Match all in time range*
-Match senders ↔ recipients for every Privacy Cash tx in a given hour range.
+  PC_FUNC1_INPUT: `📤 *Where Did the Money Go?*
+━━━━━━━━━━━━━━━━━━━
+Paste the *deposit transaction signature* — the tx where a wallet sent SOL into Privacy Cash.
 
-*Select a detection:*`,
+I'll find the wallet(s) that received the funds on the other side within a 5-minute window.
 
-  PC_FUNC1_INPUT: `1️⃣ *Recipients of a deposit*
+_How to find it:_ search the sender's wallet on Solscan and locate the Privacy Cash "Transact" tx.`,
 
-Send me the *deposit tx signature* of the wallet that used Privacy Cash.
+  PC_FUNC2_INPUT: `📥 *Where Did the Money Come From?*
+━━━━━━━━━━━━━━━━━━━
+Paste the *withdrawal transaction signature* — the tx where a wallet received SOL from Privacy Cash.
 
-_Example:_
-\`5a7XvPfuvDyAfnVA5so2LAhVsJhVXDNeU4VofNq6mFxVNbbhXmTn8dVd74UdiZTi7PcVmxoXZSj9a4BZbtnUQXxw\`
+I'll find the wallet that originally deposited the funds, plus any other recipients from the same deposit.
 
-Tolerance: dynamic (max of 0.03 SOL or 0.5% of deposit) — relayer fees are accounted for.`,
+_How to find it:_ search the recipient's wallet on Solscan and locate the Privacy Cash "Transact" tx.`,
 
-  PC_FUNC2_INPUT: `2️⃣ *Sender of a withdrawal*
-
-Send me the *withdrawal tx signature* (the tx where a wallet received funds from Privacy Cash).
-
-_Example:_
-\`4Xm7gSE8BG7rWvbL9gkbX1HxobGU5r9PhRKVK6gz7ynKtpcjzpqzet5k8tbNXLdPsevLTSee6so76ikGsRSycuhQ\`
-
-I'll match against deposits in a ±5 min window around the withdrawal.`,
-
-  PC_FUNC3_DATE: `3️⃣ *Match all in time range*
+  PC_FUNC3_DATE: `📊 *Scan a Time Window*
+━━━━━━━━━━━━━━━━━━━
+Match all Privacy Cash senders ↔ recipients in a specific time range.
 
 *Step 1 — Select date (UTC):*`,
 
-  PC_FUNC3_DATE_CUSTOM: `✏️ *Custom date*
+  PC_FUNC3_DATE_CUSTOM: `✏️ *Custom Date*
 
-Send the date in *DD-MM* format (year 2026).
+Send the date in *DD-MM* format (year is 2026).
 
 _Examples:_
-\`13-04\` → April 13, 2026
-\`01-05\` → May 1, 2026`,
+\`13-04\` → April 13
+\`01-05\` → May 1`,
 
-  PC_FUNC3_TIME: `⏰ *Step 2 — Enter time range (UTC):*
+  PC_FUNC3_TIME: `*Step 2 — Enter time range (UTC):*
 
 Format: \`HH:MM HH:MM\`
 
 _Examples:_
-\`19:00 19:30\` → 30 min
+\`19:00 19:30\` → 30 min window
 \`14:15 16:15\` → 2 hours (max)
 
-*Rules:*
+Rules:
 • End must be after start
 • Max range: 2 hours
-• Time cannot be in the future`,
+• Cannot be in the future`,
 
-  PC_BRIDGED: `⚠️ *Bridge detection coming soon*
+  PC_BRIDGED: `⚠️ *Possible Bridge Detected*
 
-No matching combination was found within the expected window. This usually means the funds were bridged to another network (Ethereum, BNB, etc.).
+No matching withdrawal was found on Solana. The funds were likely bridged to another network (Ethereum, BNB Chain, etc.).
 
-An update to detect cross-chain bridges will be available soon.`,
+_Cross-chain bridge detection is coming in a future update._`,
 
-  PC_INVALID_SIGNATURE: `❌ *Invalid signature*
+  PC_INVALID_SIGNATURE: `❌ *Invalid Signature*
 
-The signature you sent doesn't look like a valid Solana transaction. Please try again.`,
+That doesn't look like a valid Solana transaction signature. It should be a long base58 string (87-88 characters).
 
-  PC_TX_NOT_FOUND: `❌ *Transaction not found*
+_Tip: copy it directly from Solscan to avoid typos._`,
 
-I couldn't fetch that transaction from the RPC. Check the signature and try again.`,
+  PC_TX_NOT_FOUND: `❌ *Transaction Not Found*
 
-  PC_NOT_PRIVACY_CASH: `❌ *Not a Privacy Cash transaction*
+Couldn't fetch this transaction. Double-check the signature and try again.`,
 
-This tx does not interact with the Privacy Cash pool. Please send a valid Privacy Cash deposit or withdrawal signature.`,
+  PC_NOT_PRIVACY_CASH: `❌ *Not a Privacy Cash Transaction*
 
-  PC_WRONG_DIRECTION_DEPOSIT: `❌ *This is a withdrawal, not a deposit*
+This tx didn't interact with the Privacy Cash pool. Make sure you're pasting a "Transact" tx from Privacy Cash.
 
-Function 1 needs a deposit tx (wallet → Privacy Cash). Use function 2 for withdrawals.`,
+_Tip: on Solscan, look for "Privacy Cash: Transact" in the instruction list._`,
 
-  PC_WRONG_DIRECTION_WITHDRAWAL: `❌ *This is a deposit, not a withdrawal*
+  PC_WRONG_DIRECTION_DEPOSIT: `❌ *Wrong Direction*
 
-Function 2 needs a withdrawal tx (Privacy Cash → wallet). Use function 1 for deposits.`,
+This is a withdrawal, not a deposit.
+→ Use *Function 2* ("Where did the money come from?") for this tx.`,
 
-  PC_INVALID_DATE: `❌ *Invalid date format*
+  PC_WRONG_DIRECTION_WITHDRAWAL: `❌ *Wrong Direction*
 
-Please send the date as *DD-MM* (e.g., \`13-04\`).`,
+This is a deposit, not a withdrawal.
+→ Use *Function 1* ("Where did the money go?") for this tx.`,
 
-  PC_INVALID_TIME_RANGE: `❌ *Invalid time range*
+  PC_INVALID_DATE: `❌ *Invalid Date*
 
-Please send it as \`HH:MM HH:MM\` (e.g., \`19:00 19:30\`).
-Max range: 2 hours. End must be after start. Time cannot be in the future.`,
+Send the date as *DD-MM* (e.g., \`13-04\` for April 13).`,
 
-  PC_NO_ACTIVITY: `ℹ️ *No Privacy Cash activity*
+  PC_INVALID_TIME_RANGE: `❌ *Invalid Time Range*
 
-No Privacy Cash transactions were found in the selected range.`,
+Send it as \`HH:MM HH:MM\` (e.g., \`19:00 19:30\`).
+Max range: 2 hours. End must be after start. Cannot be in the future.`,
+
+  PC_NO_ACTIVITY: `ℹ️ *No Activity Found*
+
+No Privacy Cash transactions were found in that range. Try a different time window.`,
 
   SELECT_EXCHANGE: `🆕 *Fresh Wallet Scanner*
+━━━━━━━━━━━━━━━━━━━
+_Detect wallets with only incoming transfers — no outgoing activity._
 
-Detects wallets with only incoming transactions (no withdrawals).
+Toggle the exchanges you want to monitor:`,
 
-*Select exchange to monitor:*`,
+  ENTER_FILTER: `📊 *Set Amount Filter*
 
-  ENTER_FILTER: `📊 *Set Filter*
+Choose how to filter results:
 
-Enter a range or target amount:
+• *Range*: two numbers separated by a space
+  \`1 3\` → wallets that received 1-3 SOL
 
-• *Range*: Send two numbers (e.g., \`1 3\`)
-  → Finds fresh wallets between 1-3 SOL
+• *Target*: a single number
+  \`2.5\` → wallets that received ~2.5 SOL (±10%)
 
-• *Target*: Send one number (e.g., \`2.5\`)
-  → Finds fresh wallets ~2.5 SOL (±10%)
-
-*Examples:*
-\`1 3\` → Range 1-3 SOL
-\`2.5\` → Target ~2.5 SOL
-\`0.5 1.5\` → Range 0.5-1.5 SOL`,
+_Examples:_
+\`1 3\` · \`2.5\` · \`0.5 1.5\` · \`10 50\``,
 
   getFilterInput(exchangeName) {
-    return `🟡 *${exchangeName} - Fresh Wallet Scanner*
+    return `🟡 *${exchangeName} — Fresh Wallet Scanner*
 
-*Set filter:*
+*Set amount filter:*
 
-📊 Enter range (e.g., \`1 3\`)
-🎯 Enter target (e.g., \`2.5\`)`;
+📊 Range → \`1 3\`
+🎯 Target → \`2.5\``;
   },
 
-  HELP: `📖 *Fresh Wallet Detector - Help*
+  HELP: `📖 *SOLFINDER — Help*
+━━━━━━━━━━━━━━━━━━━
 
-*What is a Fresh Wallet?*
-A wallet with only incoming transactions (no withdrawals).
+*🆕 Fresh Wallet Scanner*
+Detects brand-new wallets funded from exchanges.
+1. Select exchange(s) to monitor
+2. Set an amount filter (range or target)
+3. Choose scan mode (Simple or Hopping)
+4. View results with wallet details
 
-*How it works:*
-1. Select an exchange (Binance, OKX, etc.)
-2. Set a filter (range or target amount)
-3. Scan for fresh wallets
-4. View results with transaction details
+*🛡️ Privacy Cash Scanner*
+Traces funds through Privacy Cash mixer.
+1. Recipients of a deposit — find where the money went
+2. Sender of a withdrawal — find where it came from
+3. Match all in time range — scan an entire window
 
 *Commands:*
-/start - Main menu
-/cancel - Cancel current operation
-/help - Show this help
+/start — Main menu
+/cancel — Cancel current operation
+/help — This help message
 
 *Tips:*
-• The bot follows up to 3 "hops" to find truly fresh wallets
-• Results show the path if multiple hops were followed
-• No time restrictions - scans use Helius API limits`
+• Hopping mode follows up to 3 intermediate wallets
+• Get tx signatures from solscan.io
+• All times are in UTC
+• Privacy Cash detection uses smart amount matching`
 };
 
 export default MESSAGES;
