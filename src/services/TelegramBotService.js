@@ -4,6 +4,12 @@ import { FreshWalletDetector } from '../core/FreshWalletDetector.js';
 import { ProgressTracker } from '../utils/ProgressTracker.js';
 import { STATES } from '../constants/states.js';
 import { MESSAGES } from '../constants/messages.js';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const LOGO_PATH = join(__dirname, '..', '..', 'assets', 'logo.png');
 
 /**
  * Telegram Bot Service with state machine and hierarchical menus
@@ -50,7 +56,7 @@ class TelegramBotService {
     const session = this.getSession(chatId);
     session.setState(STATES.FEATURE_SELECTION);
 
-    // Send welcome message with inline keyboard
+    // Send welcome message with logo and inline keyboard
     const keyboard = {
       inline_keyboard: [
         [{ text: '🆕 Fresh Wallet Scanner', callback_data: 'feature_fresh' }],
@@ -67,10 +73,19 @@ class TelegramBotService {
       ]
     };
 
-    await this.bot.sendMessage(chatId, MESSAGES.WELCOME, {
-      parse_mode: 'Markdown',
-      reply_markup: keyboard
-    });
+    try {
+      await this.bot.sendPhoto(chatId, LOGO_PATH, {
+        caption: MESSAGES.WELCOME,
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+    } catch (error) {
+      console.error('⚠️ Could not send logo, falling back to text:', error.message);
+      await this.bot.sendMessage(chatId, MESSAGES.WELCOME, {
+        parse_mode: 'Markdown',
+        reply_markup: keyboard
+      });
+    }
   }
 
   async handleHelp(msg) {
