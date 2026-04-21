@@ -16,7 +16,8 @@ Break mixer anonymity — trace deposits and withdrawals through Privacy Cash. F
 Get notified in real time when specific patterns appear on-chain.
 
 ━━━━━━━━━━━━━━━━━━━
-Choose a tool below to get started:`,
+Choose a tool below to get started.
+Join the community for updates & support:`,
 
   PRIVACY_CASH_MENU: `🛡️ *Privacy Cash Scanner*
 ━━━━━━━━━━━━━━━━━━━

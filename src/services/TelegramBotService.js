@@ -57,6 +57,10 @@ class TelegramBotService {
         [{ text: '🛡️ Privacy Cash Scanner', callback_data: 'feature_privacy' }],
         [{ text: '🔔 Alerts (Coming Soon)', callback_data: 'feature_alerts_soon' }],
         [
+          { text: '🐦 X / Twitter', url: 'https://x.com/solfinder_app' },
+          { text: '💬 Community', url: 'https://t.me/+_TQrrkzb-a83ZmYx' }
+        ],
+        [
           { text: '❓ FAQ', callback_data: 'show_faq' },
           { text: '📖 Help', callback_data: 'show_help' }
         ]
