@@ -12,12 +12,8 @@ Track smart-money entries — detect brand-new wallets funded from Binance, OKX,
 🛡️ *Privacy Cash Scanner*
 Break mixer anonymity — trace deposits and withdrawals through Privacy Cash. Find who sent, who received, and match them.
 
-🔔 *Alerts* _(Coming Soon)_
-Get notified in real time when specific patterns appear on-chain.
-
 ━━━━━━━━━━━━━━━━━━━
-Choose a tool below to get started.
-Join the community for updates & support:`,
+Choose a tool below to get started:`,
 
   PRIVACY_CASH_MENU: `🛡️ *Privacy Cash Scanner*
 ━━━━━━━━━━━━━━━━━━━

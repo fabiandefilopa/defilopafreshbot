@@ -61,10 +61,10 @@ class TelegramBotService {
       inline_keyboard: [
         [{ text: '🆕 Fresh Wallet Scanner', callback_data: 'feature_fresh' }],
         [{ text: '🛡️ Privacy Cash Scanner', callback_data: 'feature_privacy' }],
-        [{ text: '🔔 Alerts (Coming Soon)', callback_data: 'feature_alerts_soon' }],
         [
-          { text: '🐦 X / Twitter', url: 'https://x.com/solfinder_app' },
-          { text: '💬 Community', url: 'https://t.me/+_TQrrkzb-a83ZmYx' }
+          { text: '🐦 X', url: 'https://x.com/solfinder_app' },
+          { text: '💬 Community', url: 'https://t.me/+_TQrrkzb-a83ZmYx' },
+          { text: '📄 Docs', url: 'https://solfinder.gitbook.io/docs' }
         ],
         [
           { text: '❓ FAQ', callback_data: 'show_faq' },
